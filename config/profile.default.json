@@ -1,0 +1,39 @@
+{
+  "$comment": "李自在品牌默认 profile。所有技能的 SKILL.md 中出现的固定值与本文件一致；复制为 config/profile.json 并修改后即切换为你自己的品牌。环境变量（PODCAST_BGM / PODCAST_SHOW_ID / XYZ_AUTH_FILE / PODCAST_SKILLS_ROOT）优先级高于本文件。",
+  "brand": {
+    "show_name": "李自在AI日报",
+    "biography_show_name": "李自在AI人物志",
+    "public_account": "李自在AI",
+    "hosts": [
+      { "slot": "A", "name": "李自在", "gender": "male", "note": "每日精选开场自报、单人栏目默认主持" },
+      { "slot": "B", "name": "肖然", "gender": "female", "note": "每日精选第二主持，名字只在开场出现一次" }
+    ],
+    "outro_daily": "以上就是今天的全部内容。想看完整日报文字版，关注公众号**李自在AI**。觉得有用的话，帮我转发给做 AI 的朋友，我们明天见。",
+    "outro_industry": "以上就是这期行业洞见的全部内容。想看更多 AI 文字内容，关注公众号**李自在AI**。觉得有用的话，帮我转发给关心 AI 的朋友，我们下期见。"
+  },
+  "voices": {
+    "daily_brief_male": "zh_male_wennuanahu_uranus_bigtts",
+    "daily_brief_female": "zh_female_vv_uranus_bigtts",
+    "industry_insight": "zh_male_liufei_uranus_bigtts",
+    "opensource": "$VOLCENGINE_TTS_SPEAKER",
+    "biography_default": "zh_male_wennuanahu_uranus_bigtts"
+  },
+  "paths": {
+    "daily_data_dir": "~/.daily-ai-news",
+    "podcast_output_dir": "~/.daily-ai-news/data/{date}/podcast",
+    "industry_output_dir": "~/.daily-ai-news/data/{date}/industry_podcast",
+    "wiki_dir": "~/Documents/DailyAINewsWiki",
+    "biography_root": "~/李自在AI人物志",
+    "bgm_daily": "assets/bgm/Inspired-Cinematic-KevinMacLeod-CCBY40.mp3",
+    "bgm_biography": "",
+    "sfx_paper_dir": "assets/sfx/paper",
+    "xiaoyuzhou_auth_file": "~/.xiaoyuzhou_auth.json"
+  },
+  "publish": {
+    "platform": "xiaoyuzhou",
+    "show_id": "6a09a980f4ff26e89f601057",
+    "ai_declaration": "本音频为 AI 生成",
+    "default_schedule_time": "18:00:00",
+    "min_hours_between_releases": 4
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$comment": "空白 profile 模板。复制为 config/profile.json，把占位符换成你自己的值。带 $ 前缀的值表示引用环境变量。参考完整示例见 profile.default.json。",
+  "brand": {
+    "show_name": "<你的节目名>",
+    "biography_show_name": "<人物志系列名（可选）>",
+    "public_account": "<你的公众号/引流渠道>",
+    "hosts": [
+      { "slot": "A", "name": "<主持人甲>", "gender": "male", "note": "" },
+      { "slot": "B", "name": "<主持人乙>", "gender": "female", "note": "" }
+    ],
+    "outro_daily": "<日报收尾口播，含订阅/转发引导>",
+    "outro_industry": "<行业洞见收尾口播>"
+  },
+  "voices": {
+    "daily_brief_male": "<火山引擎音色ID>",
+    "daily_brief_female": "<火山引擎音色ID>",
+    "industry_insight": "<火山引擎音色ID>",
+    "opensource": "$VOLCENGINE_TTS_SPEAKER",
+    "biography_default": "<火山引擎音色ID>"
+  },
+  "paths": {
+    "daily_data_dir": "~/.daily-ai-news",
+    "podcast_output_dir": "~/.daily-ai-news/data/{date}/podcast",
+    "industry_output_dir": "~/.daily-ai-news/data/{date}/industry_podcast",
+    "wiki_dir": "",
+    "biography_root": "",
+    "bgm_daily": "assets/bgm/Inspired-Cinematic-KevinMacLeod-CCBY40.mp3",
+    "bgm_biography": "",
+    "sfx_paper_dir": "assets/sfx/paper",
+    "xiaoyuzhou_auth_file": "~/.xiaoyuzhou_auth.json"
+  },
+  "publish": {
+    "platform": "xiaoyuzhou",
+    "show_id": "<你的小宇宙节目ID>",
+    "ai_declaration": "本音频为 AI 生成",
+    "default_schedule_time": "18:00:00",
+    "min_hours_between_releases": 4
+  }
+}

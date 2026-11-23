@@ -1,0 +1,4 @@
+interface:
+  display_name: "双人播客生成"
+  short_description: "生成带角色定位与音色推荐的双人对话播客文字稿和音频"
+  default_prompt: "Use $duo-podcast-tts to create a dual-voice podcast (script + audio) for a given topic."

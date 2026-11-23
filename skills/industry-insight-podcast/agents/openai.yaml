@@ -1,0 +1,5 @@
+interface:
+  display_name: "行业洞见播客"
+  short_description: "从知乎选题到调研、理论、Gemini 稿件、刘飞配音和定时发布"
+  brand_color: "#4A3222"
+  default_prompt: "Use $industry-insight-podcast to make an independent industry-insight podcast episode from a public AI topic."

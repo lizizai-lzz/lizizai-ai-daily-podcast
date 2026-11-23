@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>播客封面模板 · Vintage Newspaper v3</title>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  李自在AI日报 · 播客封面 HTML 模板 v3
+  风格：Vintage Chinese Newspaper（复古中文报纸）
+  
+  ━━━ 脚本化接口 ━━━
+  
+  JS 注入（适合自动化脚本）：
+    window.setCoverData({
+      date: "...",            // 日期
+      mainTitle: "...",       // 主标题（如"李自在AI日报：每日精选"）
+      seriesTag: "...",       // 系列中文名（如"每日精选"/"开源解读"/"行业洞见"）
+      seriesEn: "...",        // 系列英文标签（如"DAILY BRIEF"）
+      hit1: "...",            // 核心新闻1
+      hit2: "...",            // 核心新闻2（可选）
+      hit3: "...",            // 核心新闻3（可选）
+      label: "..."            // 头条标签
+    });
+  
+  ━━━ 截图命令 ━━━
+  Playwright element screenshot, viewport 1024×1024, deviceScaleFactor 2
+  ═══════════════════════════════════════════════════════════════
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink-black: #0d0d0d;
+    --ink-dark: #1a1a1a;
+    --ink-mid: #3a3a3a;
+    --ink-light: #555;
+    --ink-faint: #888;
+    --paper: #f4edd8;
+    --paper-aged: #ebe3cc;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ═══════ 1:1 画布 ═══════ */
+  .cover {
+    width: 1024px;
+    height: 1024px;
+    position: relative;
+    overflow: hidden;
+    background: var(--paper);
+    font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    color: var(--ink-dark);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════ 纸张质感 ═══════ */
+  .paper-texture {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 1.5px, rgba(120,100,70,0.02) 1.5px, rgba(120,100,70,0.02) 2.5px),
+      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(120,100,70,0.013) 3px, rgba(120,100,70,0.013) 4px),
+      radial-gradient(ellipse at 12% 18%, rgba(160,140,100,0.18) 0%, transparent 45%),
+      radial-gradient(ellipse at 88% 75%, rgba(155,135,95,0.14) 0%, transparent 40%),
+      radial-gradient(ellipse at 50% 50%, rgba(170,150,110,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse at 0% 0%, rgba(140,120,80,0.2) 0%, transparent 20%),
+      radial-gradient(ellipse at 100% 100%, rgba(140,120,80,0.18) 0%, transparent 20%);
+  }
+
+  .fold-marks {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent 48.5%, rgba(0,0,0,0.015) 49.5%, rgba(0,0,0,0.025) 50%, rgba(0,0,0,0.015) 50.5%, transparent 51.5%),
+      linear-gradient(0deg, transparent 46%, rgba(0,0,0,0.01) 49%, rgba(0,0,0,0.02) 50%, rgba(0,0,0,0.01) 51%, transparent 54%);
+  }
+
+  .ink-artifacts {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .ink-artifacts .blob {
+    position: absolute;
+    background: rgba(26,26,26,0.025);
+    border-radius: 50%;
+    filter: blur(25px);
+  }
+  .ink-artifacts .blob-1 { width: 160px; height: 50px; top: 40%; right: -10px; }
+  .ink-artifacts .blob-2 { width: 100px; height: 40px; bottom: 20%; left: 20px; opacity: 0.5; }
+
+  /* ═══════ 内容 ═══════ */
+  .content {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    padding: 44px 48px 36px;
+  }
+
+  /* ─── 顶部粗线 ─── */
+  .top-rule {
+    height: 4px;
+    background: var(--ink-black);
+    margin-bottom: 12px;
+  }
+
+  /* ─── 报头 ─── */
+  .masthead {
+    text-align: center;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink-dark);
+  }
+
+  .masthead-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .masthead-name {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    color: var(--ink-black);
+    line-height: 1.15;
+  }
+
+  .masthead-en {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .masthead-rule {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+  }
+  .masthead-rule::before,
+  .masthead-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ink-dark);
+  }
+  .masthead-rule .date {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--ink-mid);
+    white-space: nowrap;
+  }
+  .masthead-rule .en-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* 系列标签背景色 — 通过 setCoverData 自动切换 */
+  .series-badge {
+    display: inline-block;
+    padding: 3px 12px 2px;
+    font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    border-radius: 2px;
+  }
+  .series-badge--daily {
+    background: var(--ink-black);
+    color: var(--paper);
+  }
+  .series-badge--opensource {
+    background: #1b2a4a;
+    color: #e8e4d9;
+  }
+  .series-badge--trends {
+    background: #4a3222;
+    color: #e8dcc8;
+  }
+
+  /* 主标题内的系列 badge — 继承父级字号 */
+  .headline-main .series-badge {
+    font-size: inherit;
+    padding: 0 14px;
+    border-radius: 3px;
+    vertical-align: baseline;
+  }
+
+  /* ─── 头条区 — 占满主要空间 ─── */
+  .headline {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 0 20px;
+  }
+
+  .headline-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .headline-eyebrow .bar {
+    width: 32px;
+    height: 3px;
+    background: var(--ink-black);
+  }
+  .headline-eyebrow .tag {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: var(--ink-mid);
+  }
+
+  .headline-main {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    color: var(--ink-black);
+    margin-bottom: 20px;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  /* 核心新闻列表 — 副标题风格 */
+  .headline-hits {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .headline-hits li {
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--ink-mid);
+    letter-spacing: 0.04em;
+    padding-left: 24px;
+    border-left: 4px solid var(--ink-black);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ─── 双线分隔 ─── */
+  .rule-double {
+    height: 7px;
+    border: none;
+    border-top: 1.5px solid var(--ink-dark);
+    border-bottom: 1.5px solid var(--ink-dark);
+    background: transparent;
+  }
+
+  /* ─── 底部系列标签 ─── */
+  .bottom {
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .bottom-series {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  .bottom-brand {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+  }
+
+  /* ─── 底部粗线 ─── */
+  .bottom-rule {
+    height: 4px;
+    background: var(--ink-black);
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background:var(--paper);">
+
+<div class="cover" id="cover-root">
+  <div class="paper-texture"></div>
+  <div class="fold-marks"></div>
+  <div class="ink-artifacts">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="content">
+    <div class="top-rule"></div>
+
+    <!-- 报头 -->
+    <div class="masthead">
+      <div class="masthead-meta">
+        <span id="cover-audience">独立开发者 · AI+教育</span>
+        <span id="cover-series-en">DAILY BRIEF</span>
+      </div>
+      <div class="masthead-name">李自在AI日报</div>
+      <div class="masthead-en">LI ZIZAI AI DAILY</div>
+      <div class="masthead-rule">
+        <span class="date" id="cover-date">2026年5月17日</span>
+        <span class="series-badge series-badge--daily" id="cover-series-tag">每日精选</span>
+      </div>
+    </div>
+
+    <!-- 头条 -->
+    <div class="headline">
+      <div class="headline-eyebrow">
+        <span class="bar"></span>
+        <span class="tag" id="cover-label">头 版</span>
+      </div>
+      <div class="headline-main" id="cover-main-title">李自在AI日报：<span class="series-badge series-badge--daily" id="cover-main-series-tag">每日精选</span></div>
+      <ul class="headline-hits">
+        <li id="cover-hit-1">万亿参数Agent模型开源上线</li>
+        <li id="cover-hit-2">Notion开发者平台正式开放</li>
+        <li id="cover-hit-3">Kimi K2.6登顶金融基准测试</li>
+      </ul>
+    </div>
+
+    <!-- 双线分隔 -->
+    <hr class="rule-double">
+
+    <!-- 底部系列标签 -->
+    <div class="bottom">
+      <span class="bottom-series" id="cover-bottom-series">DAILY BRIEF</span>
+      <span class="bottom-brand" id="cover-bottom-audience">独立开发者 · AI+教育</span>
+    </div>
+
+    <div class="bottom-rule"></div>
+  </div>
+</div>
+
+<!-- 脚本化接口 -->
+<script>
+  function setCoverData(data) {
+    if (data.date) document.getElementById('cover-date').textContent = data.date;
+    if (data.audience) {
+      document.getElementById('cover-audience').textContent = data.audience;
+      document.getElementById('cover-bottom-audience').textContent = data.audience;
+    }
+    if (data.mainTitle) document.getElementById('cover-main-title').textContent = data.mainTitle;
+    if (data.hit1) document.getElementById('cover-hit-1').textContent = data.hit1;
+    if (data.hit2) document.getElementById('cover-hit-2').textContent = data.hit2;
+    if (data.hit3) document.getElementById('cover-hit-3').textContent = data.hit3;
+    if (data.seriesEn) {
+      document.getElementById('cover-series-en').textContent = data.seriesEn;
+      document.getElementById('cover-bottom-series').textContent = data.seriesEn;
+    }
+    if (data.seriesTag) {
+      var el = document.getElementById('cover-series-tag');
+      var mainEl = document.getElementById('cover-main-series-tag');
+      el.textContent = data.seriesTag;
+      mainEl.textContent = data.seriesTag;
+      var cls = 'series-badge';
+      if (data.seriesTag.indexOf('精选') !== -1 || data.seriesTag.indexOf('daily') !== -1) {
+        cls += ' series-badge--daily';
+      } else if (data.seriesTag.indexOf('开源') !== -1 || data.seriesTag.indexOf('open') !== -1) {
+        cls += ' series-badge--opensource';
+      } else if (data.seriesTag.indexOf('行业') !== -1 || data.seriesTag.indexOf('趋势') !== -1 || data.seriesTag.indexOf('trend') !== -1) {
+        cls += ' series-badge--trends';
+      } else {
+        cls += ' series-badge--daily';
+      }
+      el.className = cls;
+      mainEl.className = cls;
+    }
+    if (data.label) document.getElementById('cover-label').textContent = data.label;
+    // 隐藏空白 li（如果只有 1-2 条新闻）
+    ['cover-hit-1','cover-hit-2','cover-hit-3'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && !el.textContent.trim()) el.style.display = 'none';
+    });
+  }
+  window.setCoverData = setCoverData;
+</script>
+
+</body>
+</html>
