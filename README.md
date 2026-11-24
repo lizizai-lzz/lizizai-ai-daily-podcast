@@ -2,7 +2,21 @@
 
 「李自在AI日报」全流程 AI 播客制作的完整 Skill 合集：从选题、调研、口播稿生成、口语化校验，到 TTS 配音、封面生成、成品校验、定时发布，一整套可以让 agent 独立跑通的生产流水线。
 
-在线效果：[李自在AI日报 · 小宇宙](https://www.xiaoyuzhoufm.com/podcast/6a09a980f4ff26e89f601057)（全部单集均由本流水线生成）
+这不是一个 demo 项目——**李自在AI日报与李自在AI人物志都是真实在更的节目**，全部单集均由本流水线生成：
+
+- 🎙 [李自在AI日报 · 小宇宙](https://www.xiaoyuzhoufm.com/podcast/6a09a980f4ff26e89f601057)（已更新 300+ 期，每日三更）
+- 🎙 [李自在AI风向标 · 小宇宙](https://www.xiaoyuzhoufm.com/podcast/6a53643dd01e2a1f16e0f63e)（人物故事与产品深访：VO 旁白 + 人物原声的纪录片风格）
+
+### 最近几期试听（各类栏目各一期）
+
+| 栏目 | 单集 | 时长 |
+| --- | --- | --- |
+| 每日精选 | [11月20日每日精选｜英伟达业绩翻倍，股价却跌近四成](https://www.xiaoyuzhoufm.com/episode/6aff8426a4a79edf137bf28c) | 11 分钟 |
+| 开源解读 | [11月23日开源解读｜OLake Go：数据库实时同步进数据湖](https://www.xiaoyuzhoufm.com/episode/6b03baaf6f7bbb70cd5982b9) | 11 分钟 |
+| 行业洞见 | [11月24日行业洞见｜OpenAI Codex 负责人 Nan Yu 用 Postgres](https://www.xiaoyuzhoufm.com/episode/6b056bbc01b0ab432edda2da) | 8 分钟 |
+| 人物故事（风向标） | [黄仁勋：一次屈辱的开口，换来英伟达一条命](https://www.xiaoyuzhoufm.com/episode/6ae3f64797726cd46759f18c) | 6 分钟 |
+
+![李自在AI日报 · 小宇宙节目页截图](assets/showcase/xiaoyuzhou-daily-show.png)
 
 ![每日精选封面](assets/demo/cover-daily-brief-2026-10-30.png)
 ![开源解读封面](assets/demo/cover-opensource-2026-10-06.png)
@@ -129,6 +143,17 @@ cp config/profile.example.json config/profile.json
 - [docs/workflow.md](docs/workflow.md) — Phase 0-4 全流程详解
 - [docs/lessons.md](docs/lessons.md) — 80+ 期实际制作沉淀的硬指标与踩坑表
 - [config/README.md](config/README.md) — 双轨制配置说明
+
+## 联系作者
+
+用这套流水线做出了自己的节目？遇到问题？或者单纯想交流 AI 播客制作？欢迎联系：
+
+- **微信**：`chd201223010315`（加好友请备注「**AI 播客**」或「来自 GitHub」）
+- **听友群**：扫码加入「李自在 AI 粉丝交流群」（微信二维码 7 天有效，过期请先加微信拉群）
+
+<p align="center">
+  <img src="assets/contact/wechat-group-qrcode.jpg" width="280" alt="李自在 AI 粉丝交流群微信群二维码">
+</p>
 
 ## License
 
