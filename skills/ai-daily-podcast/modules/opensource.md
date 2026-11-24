@@ -9,8 +9,8 @@
 - **时长**：8-10 分钟（5 个项目 × 约 1.5 分钟深度解读）
 - **字数范围**：2000-2800 字（低于 2000 字每个项目讲不透，超过 2800 字音频过长）
 - **格式**：单人深度解读，使用火山引擎 TTS 情感标签控制语调
-- **受众**：技术型独立开发者 / 一人公司 / 超级个体
-- **核心定位**：一个人在电台里给你拆解今天最值得关注的开源项目，重点是你能不能用它赚钱或提效
+- **受众**：所有对 AI 工具感兴趣的人——刚听说编码 Agent 的普通用户、技术型独立开发者、一人公司、超级个体（2026-11-24 放宽；写法上每个项目先给生活化类比或一句话定位让外行听懂，再讲机制与变现）
+- **核心定位**：一个人在电台里给你拆解今天最值得关注的开源项目，重点是你能不能用它赚钱或提效；不预设听众认识任何项目
 
 ## 品牌口播（固定，每期必含）
 
@@ -320,7 +320,7 @@
 **写作前必读** `references/voice-samples.md` 的「开发者向 / 工具与项目讲解样本」，写完必须跑：
 
 ```bash
-python3 scripts/check_oral_voice.py --type opensource {script_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py --type opensource {script_path}
 ```
 
 ### 主指标（每千汉字）
@@ -423,7 +423,7 @@ python3 scripts/check_oral_voice.py --type opensource {script_path}
 
 ## 生成前的知识库查询（本模块，强制，不可跳过）
 
-使用 Read/Glob/Grep 工具直接读取 `~/Documents/DailyAINewsWiki/`。查询结果允许为空，但查询动作不可省略。审计记录的写法见 SKILL.md Phase 2 的「验证检查点」，写入 `knowledge_audit_{date}.md`。
+使用 Read/Glob/Grep 工具直接读取 `/Users/louie/Documents/DailyAINewsWiki/`。查询结果允许为空，但查询动作不可省略。审计记录的写法见 SKILL.md Phase 2 的「验证检查点」，写入 `knowledge_audit_{date}.md`。
 
 **开源解读（5 个开源项目）**：
 - ✅ 使用 `Grep` 在 `wiki/entities/` 中按 `type: tool|model` 搜索每个开源项目，了解项目前史和迭代脉络（无匹配则标注"首次报道"）
@@ -487,6 +487,6 @@ python3 scripts/check_oral_voice.py --type opensource {script_path}
 - [ ] 每段是否有 2-3 个情感变化？
 - [ ] 禁用词是否为零？
 - [ ] 字数是否在 2000-2800 字范围内？
-- [ ] 是否跑过 `python3 scripts/check_oral_voice.py --type opensource {脚本路径}` 并且硬指标 PASS？（人称 ≥ 25、问句 ≥ 2.5、书面 ≤ 2、句长 8–18；语气词为软建议约 2–5/千字，不足或 >8 仅 WARN，遵守 TTS 禁区）
+- [ ] 是否跑过 `python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py --type opensource {脚本路径}` 并且硬指标 PASS？（人称 ≥ 25、问句 ≥ 2.5、书面 ≤ 2、句长 8–18；语气词为软建议约 2–5/千字，不足或 >8 仅 WARN，遵守 TTS 禁区）
 - [ ] 每个项目是否都有一句落到"你要不要用"的判断？
 - [ ] 中文冒号、破折号、翻案腔、三项排比是否为零？

@@ -9,8 +9,8 @@
 - **时长**：8-12 分钟（10 条新闻 × 约 1 分钟解读）
 - **字数范围**：2400-3600 字（低于 2400 字内容不够充实，超过 3600 字音频过长）
 - **格式**：双人联播（A = 李自在，男声；B = 肖然，女声），10 条新闻由两位主持交替播报，条目之间插入翻页音效，使用火山引擎 TTS 情感标签控制语调
-- **受众**：独立开发者 / 一人公司 / AI 领域创业者
-- **核心定位**：两位主持像新闻联播一样一人播一条，盘点今天 AI 圈最值得聊的 10 条热点新闻，每条都有观点点评
+- **受众**：所有对 AI 感兴趣的人——通勤上班族、普通 AI 用户、独立开发者、一人公司、AI 领域创业者（2026-11-24 放宽；写法上每条内容先给普通人秒懂的入口，再给开发者视角的判断）
+- **核心定位**：两位主持像新闻电台搭档一样一人播一条，盘点今天 AI 圈最值得聊的 10 条热点新闻，每条都有观点点评；术语首次出现跟一句大白话解释，不预设听众有任何背景知识
 
 ## 品牌口播（固定，每期必含）
 
@@ -109,7 +109,7 @@ A: [郑重地]我们从里面挑了 10 条最值得聊的，一条一条看。
 **写作前必读** `references/voice-samples.md`（12 段真实中文播客开头的完整转写、逐项密度、六条写法）。写完必须跑：
 
 ```bash
-python3 scripts/check_oral_voice.py {script_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py {script_path}
 ```
 
 ### 主指标（每千汉字）
@@ -388,7 +388,7 @@ A: [轻松地]第三条，……
 
 ## 生成前的知识库查询（本模块，强制，不可跳过）
 
-使用 Read/Glob/Grep 工具直接读取 `~/Documents/DailyAINewsWiki/`。查询结果允许为空，但查询动作不可省略。审计记录的写法见 SKILL.md Phase 2 的「验证检查点」，写入 `knowledge_audit_{date}.md`。
+使用 Read/Glob/Grep 工具直接读取 `/Users/louie/Documents/DailyAINewsWiki/`。查询结果允许为空，但查询动作不可省略。审计记录的写法见 SKILL.md Phase 2 的「验证检查点」，写入 `knowledge_audit_{date}.md`。
 
 **每日精选（10 条热点新闻）**：
 - ✅ 使用 `Grep` 在 `wiki/entities/` 中搜索每条新闻涉及的核心实体（公司/产品），了解其历史脉络（无匹配则标注"首次出现"）
@@ -438,7 +438,7 @@ A: [情感描述] {这条新闻的点评}……
 **自检二（条目内单一主持）**：把脚本按 `===` 切块，从第二块起逐块检查前缀是否唯一。最稳的做法是直接跑官方检查脚本：
 
 ```bash
-python3 scripts/check_broadcast_speakers.py {script_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_broadcast_speakers.py {script_path}
 ```
 
 输出出现 `FAIL` 就说明有新闻被两位主持合播了，必须改回一个人读完再录。
@@ -446,7 +446,7 @@ python3 scripts/check_broadcast_speakers.py {script_path}
 **自检三（口播声纹）**：跑密度检查。人称词、问句、书面连接词、平均句长是硬线；语气词不足或偏多只 WARN。
 
 ```bash
-python3 scripts/check_oral_voice.py {script_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py {script_path}
 ```
 
 出现人称/问句 `FAIL` 就回去补"人在场"：判断句改用"我/我们/你"起头，加真问句（"那落到我们身上是什么？"），不要往专名和数字后塞语气词。参考上方「TTS 语气词禁区」和「一条新闻的前后对照」。

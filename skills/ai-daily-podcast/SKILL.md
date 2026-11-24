@@ -4,14 +4,6 @@ description: 生成「李自在AI日报」播客。每日精选与开源解读�
 ---
 # AI Daily Podcast — 日报套餐 + 独立行业洞见
 
-## Profile（双轨制配置）
-
-本技能采用双轨制：**下文出现的所有固定值（音色 ID、品牌口播、目录约定）即「李自在」品牌默认版**，可直接照用；你也可以在仓库 `config/profile.json` 放自己的配置覆盖它们。执行 Phase 0 前先确认：
-
-1. 读取仓库根目录 `config/profile.json`（不存在时使用 `config/profile.default.json` 的默认值，即本文档写死的品牌默认值）。
-2. 环境变量优先级高于 profile：`PODCAST_BGM`（片头片尾 BGM）、`PODCAST_SHOW_ID`（小宇宙节目 ID）、`XYZ_AUTH_FILE`（小宇宙登录 cookie 路径）、`PODCAST_SKILLS_ROOT`（技能安装根目录）。
-3. 本仓库 `skills/` 内的配套技能（volcengine-tts、podcast-generation、xiaoyuzhou-upload 等）由脚本自动定位；单独安装本技能时请设置 `PODCAST_SKILLS_ROOT` 指向安装根目录。
-
 ## Overview
 
 支持两种运行模式：
@@ -54,11 +46,12 @@ description: 生成「李自在AI日报」播客。每日精选与开源解读�
 
 ### 必须的技能
 
-- `podcast-generation`（本仓库 `skills/` 自带）— 火山引擎播客 TTS 生成 MP3；`content-to-podcast` 脚本格式模板未随库分发，缺失时按各栏目模块的格式规范执行
-- `llm-wiki`（第三方，MIT；未随库分发，安装见 `docs/third-party.md`）— 为每日精选和开源解读提供历史连续性；行业洞见只在确有背景价值时可选查询
-- `qiaomu-ds-search`（第三方，未随库分发，安装见 `docs/third-party.md`）— **行业洞见强制依赖**：通过 DeepSeek 官方 Search / Fetch 补充检索、抓取正文、核验来源和冲突
-- `agent-reach`（第三方，未随库分发，安装见 `docs/third-party.md`）或 `chrome:control-chrome` — **行业洞见强制依赖**：读取知乎公开搜索结果、问题和高赞回答；浏览器不可用时允许使用其他公开只读搜索，但必须记录限制
-- `any-search`（第三方，未随库分发，安装见 `docs/third-party.md`）— 行业洞见可选补充；DeepSeek 搜索不可用或需要二次交叉核验时使用
+- `content-to-podcast` — 播客脚本格式模板和写作规范
+- `podcast-generation` — 火山引擎播客 TTS 生成 MP3
+- `llm-wiki`（Karpathy LLM Wiki）— 为每日精选和开源解读提供历史连续性；行业洞见只在确有背景价值时可选查询
+- `qiaomu-ds-search` — **行业洞见强制依赖**：通过 DeepSeek 官方 Search / Fetch 补充检索、抓取正文、核验来源和冲突
+- `agent-reach` 或 `chrome:control-chrome` — **行业洞见强制依赖**：读取知乎公开搜索结果、问题和高赞回答；浏览器不可用时允许使用其他公开只读搜索，但必须记录限制
+- `any-search` — 行业洞见可选补充；DeepSeek 搜索不可用或需要二次交叉核验时使用
 
 ### 环境变量
 
@@ -227,14 +220,14 @@ ai-daily-podcast/
 | 开源解读 | `modules/opensource.md` | 单人播报 + `[情感描述]` 情感标签 |
 | 行业洞见 | `modules/industry-insights.md` | 单人播报 + `[情感描述]` 情感标签 |
 
-每条脚本的生成流程：
+每条脚本的生成流程（**v2：Gemini 起稿 + 执行 LLM 微调**，2026-11-24 起）：
 1. 读取对应的模块文件（只读自己那一个）
 2. 读取选题判断结果中该播客的分配内容
 3. 加载本研究上下文：
    - 每日精选、开源解读：按模块要求查询 DailyAINewsWiki。
    - 行业洞见：读取 `industry_topic_selection_{date}.md`、`research_supplement_industry_{date}.md`、`source_brief_{date}.md`。不读取 AI 日报，不把 Wiki 日报页作为前置条件。
 
-   各模块要查什么，见对应模块文件的「生成前的研究与知识库查询」一节。
+   各模块要查什么，见对应模块文件的「生成前的知识与库查询」一节。
 
    > **验证检查点**：每条脚本生成后，必须将知识库或 DeepSeek 搜索执行情况写入独立审计文件 `knowledge_audit_{date}.md`（**不要**写入脚本文件本身，否则审计文本会被 TTS 朗读或出现在飞书文档中）。格式如下：
    > ```markdown
@@ -252,8 +245,9 @@ ai-daily-podcast/
    > 行业洞见不使用 `wiki/sources/` 这一行；改为记录知乎热度、DeepSeek Search/Fetch 数量、来源等级、反证和待核验项。
    > 本轮生成的脚本共用一个审计文件，每条播客一个章节。此文件仅用于内部验证，不上传到飞书或小宇宙。
 
-4. 按提示词要求生成完整口播脚本（Markdown 格式）
-5. 写入 `script_{type}_{date}.md`
+4. **Phase 2A（Gemini 起稿，每日精选与开源解读适用）**：完整读取 `references/gemini-writing.md`，按其中「系统提示词模板 A / B」构造该栏目系统提示词，组装用户内容（选题清单+素材要点+wiki 衔接+标题主角+开头手法），调用 `gemini_call.py` 生成初稿并存档到 `{date}/podcast/.gemini/`。Gemini 只负责"说话的方式"，事实边界以日报素材为准。
+5. **Phase 2B（执行 LLM 微调，强制）**：按 `references/gemini-writing.md` 的「Phase 2B 微调清单」逐条修订 Gemini 初稿：事实边界核对、声纹达标、情感标签、数字单位、格式合规、受众钩子与趣味抽查。完成后写入 `script_{type}_{date}.md`。
+6. 行业洞见不适用本两段式（其 Gemini 流程见 industry-insight-podcast 的 Phase 5），仍按自己的母文→大纲→逐字稿流程执行，写入 `script_{type}_{date}.md`。
 
 #### Phase 2.5: 生成 config.json
 
@@ -332,7 +326,7 @@ config.json 生成流程：
 
 #### 2.6A: de-AI-writing 去 AI 味润色
 
-使用 `de-AI-writing` Skill 对每条脚本进行保真改写（未安装该 Skill 时，直接按本节 1-7 条内联规则执行）。核心处理项目：
+使用 `de-AI-writing` Skill 对每条脚本进行保真改写。核心处理项目：
 
 1. **清理二分对照壳**：`不是 A 而是 B`、`不在于 A 而在于 B`、`一半在 A 一半在 B` 全文最多保留 1 处
 2. **清理协作口吻**：`我先来看`、`下面我们`、`一条一条来看`、`接下来我们聊` 等
@@ -354,7 +348,7 @@ config.json 生成流程：
 4. **条目内单一主持校验（每日精选专属，强制）**：检查每个 `===` 区块（首块开场、末块收尾除外）内是否只有一种前缀。执行
 
    ```bash
-   python3 scripts/check_broadcast_speakers.py {script_daily_brief_path}
+   python3 ~/.codex/skills/ai-daily-podcast/scripts/check_broadcast_speakers.py {script_daily_brief_path}
    ```
 
    必须输出 `PASS`。出现 `FAIL` 说明一条新闻被拆成了两人对话，必须把另一位主持的话并入本条主持的口吻（或删掉重复信息），改到 PASS 才能进 Phase 3 录音
@@ -400,9 +394,9 @@ config.json 生成流程：
 **2. 本轮每条脚本分别跑检查**（`--type` 不可省、不可串用）：
 
 ```bash
-python3 scripts/check_oral_voice.py --type daily_brief {script_daily_brief_path}
-python3 scripts/check_oral_voice.py --type opensource {script_opensource_path}
-python3 scripts/check_oral_voice.py --type industry {script_industry_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py --type daily_brief {script_daily_brief_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py --type opensource {script_opensource_path}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/check_oral_voice.py --type industry {script_industry_path}
 ```
 
 **3. 硬指标（FAIL → 退出码 1 → 必须改稿重跑，禁止进 Phase 3）**
@@ -446,7 +440,7 @@ FAIL 时回去补「人在场」：判断句用「我/我们/你」起头，加�
 **每日精选（双人联播）**：使用联播脚本，A/B 两条音色按条目交替，条目之间自动插入翻页音效：
 
 ```bash
-source ~/.zshrc && python3 scripts/generate_news_broadcast.py \
+source ~/.zshrc && python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_news_broadcast.py \
   --content-file {script_path} \
   --output-file {output_mp3_path} \
   --male-voice zh_male_wennuanahu_uranus_bigtts \
@@ -458,7 +452,7 @@ source ~/.zshrc && python3 scripts/generate_news_broadcast.py \
 **开源解读（单人）**：使用单人 TTS 脚本（火山引擎 Seed-TTS，支持 `[情感标签]`）：
 
 ```bash
-source ~/.zshrc && python3 scripts/generate_tts_solo.py \
+source ~/.zshrc && python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_tts_solo.py \
   --content-file {script_path} \
   --output-file {output_mp3_path}
 ```
@@ -468,7 +462,7 @@ source ~/.zshrc && python3 scripts/generate_tts_solo.py \
 **行业洞见（单人）**：必须显式指定刘飞音色，禁止依赖环境变量：
 
 ```bash
-source ~/.zshrc && python3 scripts/generate_tts_solo.py \
+source ~/.zshrc && python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_tts_solo.py \
   --content-file {script_path} \
   --output-file {output_mp3_path} \
   --speaker zh_male_liufei_uranus_bigtts
@@ -484,7 +478,7 @@ source ~/.zshrc && python3 scripts/generate_tts_solo.py \
 推广配置优先读取 `assets/promotions/{date}.json`，不存在时回退到 `assets/promotions/default.json`。配置在 `active_from` 到 `active_until` 之间生效；本轮 MP3 生成完成后、`finalize_podcast.py` 回填前执行：
 
 ```bash
-python3 scripts/apply_podcast_promotion.py --date {date}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/apply_podcast_promotion.py --date {date}
 ```
 
 - 脚本读取配置并解析相对路径，内部复用 `append_host_clip.py`，不维护第二套拼接逻辑。
@@ -498,7 +492,7 @@ python3 scripts/apply_podcast_promotion.py --date {date}
 
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |
-| `--intro-music` | 随库分发 `assets/bgm/Inspired-Cinematic-KevinMacLeod-CCBY40.mp3`（可用 `$PODCAST_BGM` 覆盖） | 固定片头/片尾曲（钢琴+弦乐，Kevin MacLeod 作曲，CC BY 4.0，见 NOTICE） |
+| `--intro-music` | `/Users/louie/Music/BGM_Library/05_Inspired_Cinematic.mp3` | 固定片头/片尾曲（钢琴+弦乐，CC BY 4.0） |
 | `--intro-music-offset` | `84` | 取曲中能量最饱满、无静音空洞的片段起点 |
 | `--intro-music-duration` | `5` | 片头纯音乐时长（人声前） |
 | `--intro-music-volume` | `-11` dB | 实测与主持人声压平（片头音乐均值 −22.7dB） |
@@ -510,9 +504,9 @@ python3 scripts/apply_podcast_promotion.py --date {date}
 **完整三栏并行模板（仅本轮确实生成三条时使用）**：
 
 ```
-Bash(run_in_background=true): source ~/.zshrc && python3 scripts/generate_news_broadcast.py --content-file script_daily_brief_...md --output-file daily_brief_....mp3 --female-voice zh_female_vv_uranus_bigtts
-Bash(run_in_background=true): source ~/.zshrc && python3 scripts/generate_tts_solo.py --content-file script_opensource_...md --output-file opensource_....mp3
-Bash(run_in_background=true): source ~/.zshrc && python3 scripts/generate_tts_solo.py --content-file script_industry_trends_...md --output-file industry_trends_....mp3
+Bash(run_in_background=true): source ~/.zshrc && python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_news_broadcast.py --content-file script_daily_brief_...md --output-file daily_brief_....mp3 --female-voice zh_female_vv_uranus_bigtts
+Bash(run_in_background=true): source ~/.zshrc && python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_tts_solo.py --content-file script_opensource_...md --output-file opensource_....mp3
+Bash(run_in_background=true): source ~/.zshrc && python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_tts_solo.py --content-file script_industry_trends_...md --output-file industry_trends_....mp3
 ```
 
 #### 3B: 封面图生成（HTML 模板 + Playwright 截图）
@@ -532,8 +526,8 @@ Bash(run_in_background=true): source ~/.zshrc && python3 scripts/generate_tts_so
 **执行命令**：
 
 ```bash
-python3 \
-  scripts/generate_covers.py \
+/Users/louie/.local/pipx/venvs/agent-reach/bin/python3 \
+  ~/.codex/skills/ai-daily-podcast/scripts/generate_covers.py \
   --date {date} \
   --output-dir {output_dir} \
   --data '{JSON数组字符串}'
@@ -564,7 +558,7 @@ python3 \
 Bash(run_in_background=true): source ~/.zshrc && python3 ... generate_news_broadcast.py --content-file script_daily_brief_...md --output-file daily_brief_....mp3 --female-voice zh_female_vv_uranus_bigtts
 Bash(run_in_background=true): source ~/.zshrc && python3 ... generate_tts_solo.py --content-file script_opensource_...md --output-file opensource_....mp3
 Bash(run_in_background=true): source ~/.zshrc && python3 ... generate_tts_solo.py --content-file script_industry_trends_...md --output-file industry_trends_....mp3
-Bash(run_in_background=true): python3 scripts/generate_covers.py --date {date} --output-dir {output_dir} --data '[...]'
+Bash(run_in_background=true): /Users/louie/.local/pipx/venvs/agent-reach/bin/python3 ~/.codex/skills/ai-daily-podcast/scripts/generate_covers.py --date {date} --output-dir {output_dir} --data '[...]'
 ```
 
 #### 3C: 回填 config.json
@@ -572,7 +566,7 @@ Bash(run_in_background=true): python3 scripts/generate_covers.py --date {date} -
 所有 MP3 和封面图生成完成后，跑一条命令即可（幂等，可重复执行）：
 
 ```bash
-python3 scripts/finalize_podcast.py --date {date}
+python3 ~/.codex/skills/ai-daily-podcast/scripts/finalize_podcast.py --date {date}
 ```
 
 该脚本负责四件事，不再需要手工 `ls`/`ffprobe`/改 JSON：
@@ -634,7 +628,7 @@ python3 scripts/finalize_podcast.py --date {date}
 - **脚本后处理（强制）**：本轮每条脚本生成后必须执行 Phase 2.6 全程 — (A) de-AI-writing → (B) 情感标签修正 → (C) 数字与单位转换 → **(D) 口播逐字稿校验（硬指标 PASS，含 TTS 禁区无命中）** → (E) 覆盖写入。**2.6D 未通过禁止进 Phase 3 录音**
 - **口播逐字稿校验（三条全部适用，强制）**：写成"人在说话"，不是"念稿"。硬指标：每日精选人称 ≥ 20，开源/洞见人称 ≥ 25；问句 ≥ 2.5；书面连接词 ≤ 2；平均句长 8–18。语气词软建议约 2–5/千字（仅 WARN），遵守 TTS 禁区（专名/数字/事实句尾不加语气词）。写作前读 `references/voice-samples.md` 与对应模块规范；**生成后必须跑** `check_oral_voice.py --type {daily_brief|opensource|industry}`，硬 FAIL（含 TTS 禁区）未清之前不得录音。**不要把句子拆短当作解法，也不要堆语气词凑密度**。行业洞见另守：写作骨架（倒叙、三层论证）不许写进稿子当路标
 - **连续性规则**：
-  - 每日精选、开源解读必须查询 `~/Documents/DailyAINewsWiki/`，从历史记录提取上下文。
+  - 每日精选、开源解读必须查询 `/Users/louie/Documents/DailyAINewsWiki/`，从历史记录提取上下文。
   - 行业洞见必须查询 `podcast_history.md`、知乎和外部研究材料；不要求查询 Wiki 日报页，也不得引用 AI 日报。
   - 所有查询与来源审计写入独立审计文件，不写进脚本正文。
 - **栏目专属写作规则见各模块文件**：每日精选的双人播报规则在 `modules/daily-brief.md`「双人播报规则」，开源解读的三档模板与诚实度约束在 `modules/opensource.md`，行业洞见的 01fish 观点体与金句菜单在 `modules/industry-insights.md`。本节只列三条共用规则
@@ -676,18 +670,19 @@ python3 scripts/finalize_podcast.py --date {date}
 | `modules/opensource.md` | Phase 2 生成开源解读脚本时，**只读这一个模块** |
 | `modules/industry-insights.md` | Phase 2 生成行业洞见脚本时，**只读这一个模块** |
 | `~/.daily-ai-news/history/podcast_history.md` | Phase 0 初始化时，**去重核心数据源**，近 7 天播客已选入的项目/新闻/观点 |
-| `~/Documents/DailyAINewsWiki/index.md` | Phase 0 初始化时，了解知识库覆盖范围 |
-| `~/Documents/DailyAINewsWiki/wiki/sources/daily-*.md` | 日报套餐 Phase 0 初始化时，为每日精选/开源解读建立连续性基线 |
-| `~/Documents/DailyAINewsWiki/wiki/synthesis/` | 日报套餐 Phase 0；行业洞见可选，仅作背景 |
+| `/Users/louie/Documents/DailyAINewsWiki/index.md` | Phase 0 初始化时，了解知识库覆盖范围 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/sources/daily-*.md` | 日报套餐 Phase 0 初始化时，为每日精选/开源解读建立连续性基线 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/synthesis/` | 日报套餐 Phase 0；行业洞见可选，仅作背景 |
 | `references/content-matrix.md` | Phase 1 选题判断时 |
 | `references/topic-selection.md` | Phase 1 选题判断时 |
 | `references/industry-research.md` | 生成行业洞见时，必须在选题前完整读取；日报套餐中的行业洞见也一样 |
 | `references/theory-support.md` | 行业洞见母文阶段完整读取；社会行为、关系、消费、健康、内容和家庭题强制加入理论支持 |
-| `~/Documents/DailyAINewsWiki/wiki/entities/`（type: org/model/tool） | Phase 2 日报驱动栏目；行业洞见仅在确有历史背景价值时可选查询 |
-| `~/Documents/DailyAINewsWiki/wiki/entities/`（type: person） | Phase 2 日报驱动栏目；行业洞见仅在确有历史背景价值时可选查询 |
-| `~/Documents/DailyAINewsWiki/wiki/entities/`（type: model/tool） | Phase 2 开源解读脚本生成时，检索项目迭代记录 |
-| `~/Documents/DailyAINewsWiki/wiki/sources/daily-*.md` | Phase 2 每日精选/开源解读生成时衔接前后日报道 |
-| `~/Documents/DailyAINewsWiki/wiki/synthesis/` | Phase 2 日报驱动栏目；行业洞见可选 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/entities/`（type: org/model/tool） | Phase 2 日报驱动栏目；行业洞见仅在确有历史背景价值时可选查询 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/entities/`（type: person） | Phase 2 日报驱动栏目；行业洞见仅在确有历史背景价值时可选查询 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/entities/`（type: model/tool） | Phase 2 开源解读脚本生成时，检索项目迭代记录 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/sources/daily-*.md` | Phase 2 每日精选/开源解读生成时衔接前后日报道 |
+| `/Users/louie/Documents/DailyAINewsWiki/wiki/synthesis/` | Phase 2 日报驱动栏目；行业洞见可选 |
 | `references/config-schema.md` | Phase 2.5 生成 config.json 时 |
+| `references/gemini-writing.md` | Phase 2A/2B 生成每日精选与开源解读脚本时（完整读取；含两栏目系统提示词模板与微调清单） |
 
 **不要**在 Skill 加载时一次性读取所有 modules 和 references 文件；也不要为了"保险"把三条的模块都读一遍。
