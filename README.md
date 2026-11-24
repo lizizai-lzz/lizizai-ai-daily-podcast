@@ -155,6 +155,18 @@ cp config/profile.example.json config/profile.json
   <img src="assets/contact/wechat-group-qrcode.jpg" width="280" alt="李自在 AI 粉丝交流群微信群二维码">
 </p>
 
+## 支持我的创作
+
+如果这套流水线或这档节目对你有帮助，欢迎[请我喝一杯咖啡 ☕](https://afdian.com/a/codexdaily)（爱发电，¥5/份，一次性支付不自动续费）——每一杯都直接转化为下一期节目的电费和 API 账单。
+
+<p align="center">
+  <a href="https://afdian.com/a/codexdaily">
+    <img src="assets/contact/afdian-qrcode.png" width="300" alt="爱发电赞助二维码：请我喝一杯咖啡">
+  </a>
+</p>
+
+> 支持链接：**https://afdian.com/a/codexdaily**
+
 ## License
 
 代码以 [MIT](LICENSE) 发布。多媒体资产有各自的授权约束，见 [NOTICE](NOTICE)。
