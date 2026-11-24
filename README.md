@@ -98,7 +98,10 @@ lizizai-ai-daily-podcast/
 把 `skills/` 下的目录复制/软链到你的 agent 技能目录（如 Claude Code 的 `~/.claude/skills/`），或整仓使用：
 
 ```bash
+# GitHub
 git clone https://github.com/lizizai-lzz/lizizai-ai-daily-podcast.git
+# Gitee 镜像（国内网络更快）
+git clone https://gitee.com/a741311791/lizizai-ai-daily-podcast.git
 # 整仓使用时，设置环境变量让脚本互相找到对方：
 export PODCAST_SKILLS_ROOT=/path/to/lizizai-ai-daily-podcast
 ```
