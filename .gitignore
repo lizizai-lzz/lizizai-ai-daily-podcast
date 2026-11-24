@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .venv/
-config/profile.json        # 个人配置（含节目 ID 等），只提交 default 与 example
+# 个人配置（含节目 ID 等），只提交 default 与 example
+config/profile.json
 *.mp3.tmp
 *.log
