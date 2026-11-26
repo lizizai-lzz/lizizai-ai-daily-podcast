@@ -1,0 +1,21 @@
+{
+  "active_from": "2026-11-26",
+  "active_until": null,
+  "podcast_types": [
+    "daily_brief",
+    "opensource",
+    "industry_trends"
+  ],
+  "promo_id": "lizizai-podcast-opensource",
+  "column": "AI 播客全流程制作 Skill 开源仓库",
+  "repo_url": "https://github.com/lizizai-lzz/lizizai-ai-daily-podcast",
+  "script_file": "promo_script.md",
+  "voice": "zh_male_wennuanahu_uranus_bigtts",
+  "speech_rate": 1.08,
+  "loudness_target_lufs": -17.3,
+  "measured_loudness_lufs": -17.3,
+  "measured_true_peak_dbtp": -1.58,
+  "final_promo_file": "promo.mp3",
+  "final_duration_seconds": 57.86,
+  "production_note": "纯 AI TTS 合成（火山 Seed-TTS 温暖阿胡，1.08 倍速），无第三方原声与授权素材。内容回读依据 TTS 分段日志与时长比例交叉验证；上线前建议人工试听一次。"
+}
