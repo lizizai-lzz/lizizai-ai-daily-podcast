@@ -177,3 +177,5 @@ cp config/profile.example.json config/profile.json
 ## 免责声明
 
 本仓库以「李自在AI日报」为默认品牌配置，那是作者真实的在更节目——直接使用默认 profile 会生成带有「李自在」品牌口播的内容，发布前请换成你自己的 [profile](config/README.md)。上传平台时请遵守平台规范：小宇宙要求勾选「本音频为 AI 生成」声明，该流程已内建在 `xiaoyuzhou-upload` 中。
+
+PR 联动验收 2026-11-27
